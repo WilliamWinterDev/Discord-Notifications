@@ -135,6 +135,10 @@ public class DiscordNotificationsPlugin extends Plugin
 			return;
 		}
 
+		if (net.runelite.client.config.RuneScapeProfileType.getCurrent(client) == net.runelite.client.config.RuneScapeProfileType.BETA) {
+			return;
+		}
+
 		String skillName = statChanged.getSkill().getName();
 		int level = statChanged.getLevel();
 
