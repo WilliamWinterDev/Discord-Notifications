@@ -10,9 +10,14 @@ import net.runelite.api.widgets.WidgetID;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.ItemVariationMapping;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.loottracker.LootReceived;
 import net.runelite.client.ui.DrawManager;
+
+import static net.runelite.api.ItemID.*;
 import static net.runelite.api.widgets.WidgetID.QUEST_COMPLETED_GROUP_ID;
 import okhttp3.*;
 
@@ -59,6 +64,9 @@ public class DiscordNotificationsPlugin extends Plugin
 	@Inject
 	private DrawManager drawManager;
 
+	@Inject
+	private ItemManager itemManager;
+
 	@Provides
 	DiscordNotificationsConfig provideConfig(ConfigManager configManager)
 	{
@@ -99,9 +107,27 @@ public class DiscordNotificationsPlugin extends Plugin
 
 		boolean didCompleteClue = client.getWidget(WidgetInfo.CLUE_SCROLL_REWARD_ITEM_CONTAINER) != null;
 
-		if (shouldSendClueMessage && didCompleteClue && config.sendClue()) {
+		if (shouldSendClueMessage && didCompleteClue && config.sendClue())
+		{
+			// Clue Scrolls use same InventoryID as Barrows
+			final ItemContainer container = client.getItemContainer(InventoryID.BARROWS_REWARD);
+			final Item[] items = container.getItems();
+			// get GE Value of items
+			long totalValue = 0;
+			for (final Item item : items)
+			{
+				final int quantity = item.getQuantity();
+				final int itemId = item.getId();
+
+				totalValue += itemManager.getItemPrice(itemId) * quantity;
+			}
+
+			if (totalValue >= config.minClueValue())
+			{
+				sendClueMessage();
+			}
+
 			shouldSendClueMessage = false;
-			sendClueMessage();
 		}
 
 		if (
