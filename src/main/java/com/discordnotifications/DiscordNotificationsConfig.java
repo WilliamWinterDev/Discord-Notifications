@@ -146,9 +146,19 @@ public interface DiscordNotificationsConfig extends Config {
 			keyName = "includeClues",
 			name = "Send Clue Notifications",
 			description = "Send messages when you complete a clue scroll.",
-			section = clueConfig
+			section = clueConfig,
+			position = 1
 	)
 	default boolean sendClue() { return false; }
+
+	@ConfigItem(
+			keyName = "minimumClueValue",
+			name = "Minimum Clue Value",
+			description = "Minimum value of clue reward before a notification is sent.",
+			section = clueConfig,
+			position = 2
+	)
+	default int minClueValue() { return 0; }
 
 	@ConfigItem(
 			keyName = "sendClueScreenshot",
